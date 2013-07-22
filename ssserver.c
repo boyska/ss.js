@@ -90,8 +90,7 @@ int accumulate(struct options* options) {
 	int socket_fd, connection_fd;
 	socklen_t address_length;
 	socket_fd = socket(PF_UNIX, SOCK_STREAM, 0);
-	if(socket_fd < 0)
-	{
+	if(socket_fd < 0) {
 		printf("socket() failed\n");
 		return 1;
 	} 
@@ -106,22 +105,19 @@ int accumulate(struct options* options) {
 
 	if(bind(socket_fd, 
 				(struct sockaddr *) &address, 
-				sizeof(struct sockaddr_un)) != 0)
-	{
+				sizeof(struct sockaddr_un)) != 0) {
 		printf("bind() failed\n");
 		return 1;
 	}
 
-	if(listen(socket_fd, 5) != 0)
-	{
+	if(listen(socket_fd, 5) != 0) {
 		printf("listen() failed\n");
 		return 1;
 	}
 
 	while(options->n_messages-- > 0 &&
 		(connection_fd = accept(socket_fd,(struct sockaddr *) &address, &address_length)
-		) > -1 )
-	{
+		) > -1 ) {
 		connection_handler(connection_fd, options->message_length);
 	}
 	unlink(options->filename);
