@@ -88,6 +88,7 @@ struct options* parse_options(int argc, char **argv) {
 int accumulate(struct options* options) {
 	struct sockaddr_un address;
 	int socket_fd, connection_fd;
+	int i = 0;
 	socklen_t address_length;
 	socket_fd = socket(PF_UNIX, SOCK_STREAM, 0);
 	if(socket_fd < 0) {
@@ -115,7 +116,7 @@ int accumulate(struct options* options) {
 		return 1;
 	}
 
-	while(options->n_messages-- > 0 &&
+	while( (i++ < options->n_messages ) &&
 		(connection_fd = accept(socket_fd,(struct sockaddr *) &address, &address_length)
 		) > -1 ) {
 		connection_handler(connection_fd, options->message_length);
@@ -126,6 +127,8 @@ int accumulate(struct options* options) {
 void combine(struct options* options) {
 	int tochild[2];
 	int pid;
+	char *quorum = calloc(3, sizeof(char));
+	snprintf(quorum, 3, "%d", options->n_messages);
 	if(pipe(tochild)<0) {
 		perror("Error making pipe");
 		exit(1);
@@ -143,7 +146,7 @@ void combine(struct options* options) {
 			dup2(1,2); /* redirect stderr to stdout */
 			close(1);
 			execl("/usr/bin/ssss-combine", "ssss-combine", "-Qxt",
-					"3"/* TODO: parametrize on n_messages */);
+					quorum);
 			perror("Problem with combine");
 			exit(126);
 		default: /* Parent */
